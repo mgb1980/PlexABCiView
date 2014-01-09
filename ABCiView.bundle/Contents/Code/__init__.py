@@ -3,17 +3,14 @@ from iview_class import *
 ART = 'art-default.jpg'
 ICON = 'icon-default.jpg'
 
-
 def Start():
+    HTTP.RandomizeUserAgent(browser='Safari')
     Plugin.AddViewGroup('List', viewMode='List', mediaType='items')
     Plugin.AddViewGroup('InfoList', viewMode='InfoList', mediaType='items')
 
-
-@handler('/video/aubciview', 'Australian ABC iView', art=ART, thumb=ICON)
+@handler('/video/iview', 'ABC iView', art=ART, thumb=ICON)
 def MainMenu():
     oc = ObjectContainer(view_group='List', title2='ABC iView')
-
-
     #oc.add(VideoClipObject(key = RTMPVideoURL(url = 'rtmp://203.18.195.10/ondemand' + '?auth=7B8F0402DD370FF9299E', clip = 'mp4:comedy/madashell_02_08', swf_url = 'http://www.abc.net.au/iview/images/iview.jpg'), rating_key = '123',title = 'TEST'))
 
     cats = iView_Config.List_Categories()
@@ -29,7 +26,7 @@ def MainMenu():
     return oc
 
 
-@route('/video/aubciview/category/{category}')
+@route('/video/iview/category/{category}')
 def GetSeriesByCaegory(category):
     cat = iView_Category(category)
 
@@ -42,19 +39,23 @@ def GetSeriesByCaegory(category):
             key=Callback(GetEpisodesBySeries, series=item[0]),
             title=item[1]
         ))
+        Log('Adding series key:' + item[0])
     oc.objects.sort(key=lambda obj: obj.title)
 
     return oc
 
 
-@route('/video/aubciview/series/{series}')
+@route('/video/abciview/series/{series}')
 def GetEpisodesBySeries(series):
     show = iView_Series(series)
     oc = ObjectContainer(view_group='InfoList', title2=show.title, no_cache=True)
 
     episodes = show.episodes
-
+    Log('>>>>>>>>>>Got Episodes<<<<<<<<<<<<<<')
+    Log(str(episodes))
+    
     rtmp_url = iView_Config.RTMP_URL()
+    Log('Got rtmp url for TPG IP with: ' + rtmp_url)
 
     for item in episodes:
         dur = item[5] * 1000
@@ -65,7 +66,7 @@ def GetEpisodesBySeries(series):
     return oc
 
 
-@route('/video/aubciview/episode/play')
+@route('/video/iview/episode/play')
 def Play_iView(iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Duration, video_url, iView_live=0,
                include_container=False):
     HTTP.ClearCache()
@@ -83,27 +84,43 @@ def Play_iView(iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Durati
         "include_container": True,
     }
 
+    Log('==== Video ====')
+    Log('Title: ' + iView_Title)
+    Log('RTMP Path: ' + video_url)
+    Log('Clip Path: ' + iView_Config.CLIP_PATH())
+    Log('Video Path: ' + iView_Path)
+    Log('==== End Video ====')
+    
     if iView_live == 1:
         rtmpVid = RTMPVideoURL(url=video_url, clip=iView_Path, swf_url=iView_Config.SWF_URL, live=True)
     else:
         rtmpVid = RTMPVideoURL(url=video_url, clip=iView_Config.CLIP_PATH() + iView_Path, swf_url=iView_Config.SWF_URL)
 
+    #vco = VideoClipObject(
+    #    key=Callback(Play_iView, **call_args),
+    #    rating_key=iView_Path,
+    #    title=iView_Title,
+    #    summary=iView_Summary,
+    #    thumb=iView_Thumb,
+    #    duration=int(iView_Duration),
+    #    items=[
+    #        MediaObject(
+    #            parts=[
+    #                PartObject(
+    #                    key=rtmpVid
+    #                )
+    #            ]
+    #        )
+    #    ]
+    #)
+    
     vco = VideoClipObject(
-        key=Callback(Play_iView, **call_args),
+        url= 'something', #Callback(Play_iView, **call_args),
         rating_key=iView_Path,
         title=iView_Title,
         summary=iView_Summary,
         thumb=iView_Thumb,
         duration=int(iView_Duration),
-        items=[
-            MediaObject(
-                parts=[
-                    PartObject(
-                        key=rtmpVid
-                    )
-                ]
-            )
-        ]
     )
 
     if include_container:
