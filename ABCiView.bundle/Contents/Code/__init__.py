@@ -45,9 +45,19 @@ def GetSeriesByCaegory(category):
     return oc
 
 
-@route('/video/abciview/series/{series}')
+@route('/video/iview/series/{series}')
 def GetEpisodesBySeries(series):
     show = iView_Series(series)
+    json = JSON.ObjectFromURL('http://iview.abc.net.au/api/legacy/flash/?series=' + series)
+    Log('Got series info back>>>>>' + str(json))
+    Log('Got show back>>>>>')
+    Log(str(show))
+        #self.title = json[0]['b']
+        #self.description = json[0]['c']
+        #self.category = json[0]['e']
+        #self.img = json[0]['d']
+        #self.episode_count = len(json[0]['f'])
+        #self.episodes = self.Episodes(json[0]['f'])
     oc = ObjectContainer(view_group='InfoList', title2=show.title, no_cache=True)
 
     episodes = show.episodes
@@ -58,8 +68,7 @@ def GetEpisodesBySeries(series):
     Log('Got rtmp url for TPG IP with: ' + rtmp_url)
 
     for item in episodes:
-        dur = item[5] * 1000
-        oc.add(Play_iView(item[1], item[2], item[3], item[4], dur, rtmp_url, item[6]))
+        oc.add(Play_iView(item['id'], item['title'], item['description'], item['url'], item['thumb'], item['duration'], rtmp_url, item['live']))
 
     oc.objects.sort(key=lambda obj: obj.title)
 
@@ -67,13 +76,14 @@ def GetEpisodesBySeries(series):
 
 
 @route('/video/iview/episode/play')
-def Play_iView(iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Duration, video_url, iView_live=0,
+def Play_iView(video_id, iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Duration, video_url, iView_live=0,
                include_container=False):
     HTTP.ClearCache()
 
     iView_live = int(iView_live)
 
     call_args = {
+        "video_id": video_id,
         "iView_Title": iView_Title,
         "iView_Summary": iView_Summary,
         "iView_Path": iView_Path,
@@ -115,7 +125,7 @@ def Play_iView(iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Durati
     #)
     
     vco = VideoClipObject(
-        url= 'something', #Callback(Play_iView, **call_args),
+        url= 'http://abc.net.au/iview/#/view/' + video_id, #Callback(Play_iView, **call_args),
         rating_key=iView_Path,
         title=iView_Title,
         summary=iView_Summary,

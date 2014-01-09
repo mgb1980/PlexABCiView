@@ -59,7 +59,8 @@ class iView_Config():
 class iView_Series(object):
     def __init__(self, key):
         self.id = key
-        json = JSON.ObjectFromURL(iView_Config.API_URL + 'series=' + key)
+        Log('Getting iView series info for:' + iView_Config.API_URL + 'series=' + key)
+	json = JSON.ObjectFromURL(iView_Config.API_URL + 'series=' + key)
 
         self.title = json[0]['b']
         self.description = json[0]['c']
@@ -71,33 +72,26 @@ class iView_Series(object):
     def Episodes(self, json):
         eps = []
         for ep in json:
-            id = ep['a']
-            title = ep['b']
-            description = ep['d']
+            episode = {}
+	    episode['id'] = ep['a']
+            episode['title'] = ep['b']
+            episode['description'] = ep['d']
 
-            live = 0
+            episode['live'] = 0
             if 'n' in ep:
-                url = ep['n'][:-4]
+                episode['url'] = ep['n'][:-4]
             else:
-                url = ep['r']
-                live = 1
+                episode['url'] = ep['r']
+                episode['live'] = 1
 
-            thumb = ep['s']
+            episode['thumb'] = ep['s']
 
             if 'j' in ep:
-                duration = int(ep['j'])
+                episode['duration'] = int(ep['j']) * 1000
             else:
-                duration = 0
-
-            tmp = []
-            tmp.append(id)
-            tmp.append(title)
-            tmp.append(description)
-            tmp.append(url)
-            tmp.append(thumb)
-            tmp.append(duration)
-            tmp.append(live)
-            eps.append(tmp)
+                episode['duration'] = 0
+		
+            eps.append(episode)
 
         return eps
 

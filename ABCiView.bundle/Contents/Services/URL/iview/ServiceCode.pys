@@ -5,21 +5,28 @@ def MetadataObjectForURL(url):
     
     #if CHECKURL
     #
-    data = JSON.ObjectFromURL(url)
+    RE_PLAYLIST = Regex('([0-9]+)$', Regex.DOTALL)
+    ID = RE_PLAYLIST.search(url).group(0)
+    Log('Got ID:' + ID) 
+    
+    data = JSON.ObjectFromURL('http://iview.abc.net.au/api/legacy/flash/?series='+ID)
     Log('>>>>>>>>SERVICE: MetadataObjectForURL: ' + url)
-    #title = data['name']
-    #summary = data['shortDescription']
-    #thumb = data['thumbnailURL']
-    #duration = data['length']
-    #originally_available_at = Datetime.FromTimestamp(int(data['publishedDate'])/1000)
-    #
-    #return VideoClipObject(
-    #    title=title,
-    #    summary=summary,
-    #    thumb=thumb,
-    #    duration=duration,
-    #    originally_available_at=originally_available_at,
-    #)
+    episodes = data[0]['f']
+    for episode in episodes:
+        if episode['a'] == ID:
+            title = episode['b']
+            summary = episode['d']
+            thumb = episode['s']
+            duration = int(episode['j'])*1000
+            #originally_available_at
+    
+    
+    return VideoClipObject(
+        title=title,
+        summary=summary,
+        thumb=thumb,
+        duration=duration,
+    )
 
 
 def MediaObjectsForURL(url):
@@ -42,6 +49,9 @@ def MediaObjectsForURL(url):
 def PlayVideo(url):
     #do the work to return get the RTMP URL
     
-    return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url=rtmp_base, clip=rtmp_clip))
+    rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001'
+                           , clip='kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'
+                            )
+    return IndirectResponse(VideoClipObject, key=rtmpVid)
     #data = JSON.ObjectFromURL(url)    
     #return Redirect(data['FLVURL'])
