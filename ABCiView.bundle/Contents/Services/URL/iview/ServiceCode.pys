@@ -49,9 +49,11 @@ def MediaObjectsForURL(url):
 def PlayVideo(url):
     #do the work to return get the RTMP URL
     
-    rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001'
-                           , clip='kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'
-                            )
-    return IndirectResponse(VideoClipObject, key=rtmpVid)
-    #data = JSON.ObjectFromURL(url)    
-    #return Redirect(data['FLVURL'])
+    #rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001'
+    #                       , clip='kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'
+    #                        )
+    rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg')
+    
+    Log('attempting to play video')
+    
+    return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'))

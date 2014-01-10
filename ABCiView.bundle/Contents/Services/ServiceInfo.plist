@@ -12,7 +12,11 @@
                 <array>
                     <string>http://abc.net.au/iview/.+</string>
                 </array>
-            </dict>
+            </dict>                            
         </dict>
+        <key>PlexFrameworkFlags</key>
+        <array>
+        	<string>UseRealRTMP</string>
+        </array>        
     </dict>
 </plist>
