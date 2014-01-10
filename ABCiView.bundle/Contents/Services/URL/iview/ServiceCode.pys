@@ -51,9 +51,48 @@ def PlayVideo(url):
     
     #rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001'
     #                       , clip='kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'
-    #                        )
-    rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg')
+    #)
+    BASE_URL = 'http://www.abc.net.au/iview/'
+    CFG_URL = BASE_URL + 'xml/config.xml'
+    CFG_XML = XML.ElementFromURL(CFG_URL)
+    AUTH_URL = CFG_XML.xpath('/config/param[@name="auth"]')[0].get("value")
+    FALLBACK_PATH = 'rtmp://cp53909.edgefcs.net/ondemand'
+    xml = XML.ElementFromURL(url=AUTH_URL) 
+    token = xml.xpath('//a:token/text()', namespaces={'a': 'http://www.abc.net.au/iView/Services/iViewHandshaker'})[0]
+    server = xml.xpath('//a:server/text()', namespaces={'a': 'http://www.abc.net.au/iView/Services/iViewHandshaker'})[0]
+    
+    if 'http' in server:
+        rtmpURL = FALLBACK_PATH + '?auth=' + token
+    else:
+        rtmpURL = server + '?auth=' + token
+    
+    RE_ID = Regex('([0-9]+)$', Regex.DOTALL)
+    ID = RE_ID.search(url).group(0)
+    Log('Got ID:' + ID)
+    API_URL = CFG_XML.xpath('/config/param[@name="api"]')[0].get("value")
+
+    data = JSON.ObjectFromURL(API_URL + 'series=' + str(ID))
+    Log('>>>>>>>>SERVICE: MetadataObjectForURL: ' + url)
+    episodes = data[0]['f']
+    for episode in episodes:
+        if episode['a'] == ID:
+            live = 0
+            if 'n' in episode:
+                video_url = episode['n'][:-4]
+            else:
+                video_url = episode['r']
+                live = 1
+            
+    SWF_URL = 'http://www.abc.net.au/iview/images/iview.jpg'
+    CLIP = 'mp4:flash/playback/_definst_/'
+    if live == 1:
+        rtmpVid = RTMPVideoURL(url=rtmpURL, clip=video_url, swf_url=SWF_URL, live=True)
+    else:
+        rtmpVid = RTMPVideoURL(url=rtmpURL, clip=CLIP + video_url, swf_url=SWF_URL)
+
+    #rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg')
     
     Log('attempting to play video')
     
-    return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'))
+    #return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'))
+    return IndirectResponse(VideoClipObject, key=rtmpVid)
