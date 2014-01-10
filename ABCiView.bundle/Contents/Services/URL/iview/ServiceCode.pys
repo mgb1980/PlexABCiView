@@ -3,14 +3,10 @@
 
 def MetadataObjectForURL(url):
     
-    #if CHECKURL
-    #
+    #TODO get normalised url
     RE_PLAYLIST = Regex('([0-9]+)$', Regex.DOTALL)
     ID = RE_PLAYLIST.search(url).group(0)
-    Log('Got ID:' + ID) 
-    
     data = JSON.ObjectFromURL('http://iview.abc.net.au/api/legacy/flash/?series='+ID)
-    Log('>>>>>>>>SERVICE: MetadataObjectForURL: ' + url)
     episodes = data[0]['f']
     for episode in episodes:
         if episode['a'] == ID:
@@ -19,8 +15,11 @@ def MetadataObjectForURL(url):
             thumb = episode['s']
             duration = int(episode['j'])*1000
             #originally_available_at
-    
-    
+            #content_rating = episode['m']
+            #season = episode['u']
+            #absolute_index = episode['v']
+            
+        
     return VideoClipObject(
         title=title,
         summary=summary,
@@ -47,11 +46,6 @@ def MediaObjectsForURL(url):
 
 @indirect
 def PlayVideo(url):
-    #do the work to return get the RTMP URL
-    
-    #rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001'
-    #                       , clip='kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'
-    #)
     BASE_URL = 'http://www.abc.net.au/iview/'
     CFG_URL = BASE_URL + 'xml/config.xml'
     CFG_XML = XML.ElementFromURL(CFG_URL)
@@ -68,11 +62,11 @@ def PlayVideo(url):
     
     RE_ID = Regex('([0-9]+)$', Regex.DOTALL)
     ID = RE_ID.search(url).group(0)
-    Log('Got ID:' + ID)
+    #TODO: handle if URL is of different format (ie .scrape page and get same share liknk)
     API_URL = CFG_XML.xpath('/config/param[@name="api"]')[0].get("value")
-
+    
+    #API returns series even if querying with episode ID
     data = JSON.ObjectFromURL(API_URL + 'series=' + str(ID))
-    Log('>>>>>>>>SERVICE: MetadataObjectForURL: ' + url)
     episodes = data[0]['f']
     for episode in episodes:
         if episode['a'] == ID:
@@ -90,9 +84,4 @@ def PlayVideo(url):
     else:
         rtmpVid = RTMPVideoURL(url=rtmpURL, clip=CLIP + video_url, swf_url=SWF_URL)
 
-    #rtmpVid = RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg')
-    
-    Log('attempting to play video')
-    
-    #return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url='rtmp://cp53909.edgefcs.net/ondemand?auth=daEdQbtbJd7dPaMbjcFb4b_cGbybNaLaDdi-bsZWG.-8-llu_wHAqG&aifp=v001', clip='mp4:flash/playback/_definst_/kids/backyardscience_01_20', swf_url='http://www.abc.net.au/iview/images/iview.jpg'))
     return IndirectResponse(VideoClipObject, key=rtmpVid)
