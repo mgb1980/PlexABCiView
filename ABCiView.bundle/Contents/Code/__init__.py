@@ -47,10 +47,9 @@ def GetEpisodesBySeries(series):
     json = JSON.ObjectFromURL('http://iview.abc.net.au/api/legacy/flash/?series=' + series)
     oc = ObjectContainer(view_group='InfoList', title2=show.title, no_cache=True)
     episodes = show.episodes
-    rtmp_url = iView_Config.RTMP_URL()
- 
+    
     for item in episodes:
-        oc.add(Play_iView(item['id'], item['title'], item['description'], item['url'], item['thumb'], item['duration'], rtmp_url, item['live']))
+        oc.add(Play_iView(item['id'], item['title'], item['description'], item['url'], item['thumb'], item['duration'] ))
 
     oc.objects.sort(key=lambda obj: obj.title)
 
@@ -58,40 +57,21 @@ def GetEpisodesBySeries(series):
 
 
 @route('/video/iview/episode/play')
-def Play_iView(video_id, iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Duration, video_url, iView_live=0,
-               include_container=False):
+def Play_iView(video_id, iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Duration):
+   
     HTTP.ClearCache()
-    iView_live = int(iView_live)
-
-    call_args = {
-        "video_id": video_id,
-        "iView_Title": iView_Title,
-        "iView_Summary": iView_Summary,
-        "iView_Path": iView_Path,
-        "iView_Thumb": iView_Thumb,
-        "iView_Duration": int(iView_Duration),
-        "video_url": video_url,
-        "iView_live": iView_live,
-        "include_container": True,
-    }
-
     Log('==== Video ====')
     Log('Title: ' + iView_Title)
-    Log('RTMP Path: ' + video_url)
-    Log('Clip Path: ' + iView_Config.CLIP_PATH())
     Log('Video Path: ' + iView_Path)
     Log('==== End Video ====')
     
     vco = VideoClipObject(
-        url= 'http://abc.net.au/iview/#/view/' + video_id, #Callback(Play_iView, **call_args),
+        url= 'http://abc.net.au/iview/#/view/' + video_id, 
         rating_key=iView_Path,
         title=iView_Title,
         summary=iView_Summary,
         thumb=iView_Thumb,
-        duration=int(iView_Duration),
+        duration=iView_Duration,
     )
 
-    if include_container:
-        return ObjectContainer(objects=[vco])
-    else:
-        return vco
+    return vco
