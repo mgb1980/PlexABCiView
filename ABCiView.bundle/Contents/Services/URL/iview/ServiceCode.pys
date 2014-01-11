@@ -8,23 +8,39 @@ def MetadataObjectForURL(url):
     ID = RE_PLAYLIST.search(url).group(0)
     data = JSON.ObjectFromURL('http://iview.abc.net.au/api/legacy/flash/?series='+ID)
     episodes = data[0]['f']
+    show = data[0]['b']
+    RE_EPISODE = Regex('^'+show+' (.*)$')
+    
     for episode in episodes:
         if episode['a'] == ID:
-            title = episode['b']
+            title = RE_EPISODE.search(episode['b']).group(1)
             summary = episode['d']
             thumb = episode['s']
             duration = int(episode['j'])*1000
-            #originally_available_at
-            #content_rating = episode['m']
-            #season = episode['u']
-            #absolute_index = episode['v']
+            content_rating = episode['m']
+            try:
+                season = int(episode['u'])
+            except:
+                season = None
+            
+            try:
+                absolute_index = int(episode['v'])
+            except:
+                absolute_index = None
+            expires_on = episode['g']
+            aired = Datetime.ParseDate(episode['f'])
+            summary = summary + '\n\nExpires: ' + expires_on
             
         
-    return VideoClipObject(
+    return EpisodeObject(
         title=title,
         summary=summary,
         thumb=thumb,
         duration=duration,
+        show = show,
+        season = season,
+        absolute_index = absolute_index,
+        originally_available_at = aired
     )
 
 
