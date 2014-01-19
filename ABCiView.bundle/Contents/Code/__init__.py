@@ -34,17 +34,21 @@ def GetSeriesByCaegory(category):
     for item in series:
         oc.add(DirectoryObject(
             key=Callback(GetEpisodesBySeries, series=item[0]),
-            title=item[1]
+            title=item[1],
+            thumb=Callback(GetSeriesThumb, seriesID=item[0])
         ))
         
     oc.objects.sort(key=lambda obj: obj.title)
     return oc
 
 
+def GetSeriesThumb(seriesID):
+    show = iView_Series(seriesID)
+    return show.img
+
 @route('/video/iview/series/{series}')
 def GetEpisodesBySeries(series):
     show = iView_Series(series)
-    json = JSON.ObjectFromURL('http://iview.abc.net.au/api/legacy/flash/?series=' + series)
     oc = ObjectContainer(view_group='InfoList', title2=show.title, no_cache=True)
     episodes = show.episodes
     

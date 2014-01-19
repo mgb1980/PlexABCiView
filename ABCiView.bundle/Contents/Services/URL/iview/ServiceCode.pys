@@ -7,43 +7,45 @@ def MetadataObjectForURL(url):
     RE_PLAYLIST = Regex('([0-9]+)$', Regex.DOTALL)
     ID = RE_PLAYLIST.search(url).group(0)
     data = JSON.ObjectFromURL('http://iview.abc.net.au/api/legacy/flash/?series='+ID)
-    episodes = data[0]['f']
-    show = data[0]['b']
-    RE_EPISODE = Regex('^'+show+' (.*)$')
     
-    for episode in episodes:
-        if episode['a'] == ID:
-            title = RE_EPISODE.search(episode['b']).group(1)
-            summary = episode['d']
-            thumb = episode['s']
-            duration = int(episode['j'])*1000
-            content_rating = episode['m']
-            try:
-                season = int(episode['u'])
-            except:
-                season = None
+    for result in data:
+        Log('Checking for ID:' + str(ID) + ' and got ' + str(result['a']) )
+        Log('matched ID so getting episodes data')
+        episodes = result['f']
+        show = result['b']
+        RE_EPISODE = Regex('^'+show+' (.*)$')
+    
+        for episode in episodes:
+            if episode['a'] == ID:
+                title = RE_EPISODE.search(episode['b']).group(1)
+                summary = episode['d']
+                thumb = episode['s']
+                duration = int(episode['j'])*1000
+                content_rating = episode['m']
+                try:
+                    season = int(episode['u'])
+                except:
+                    season = None
+                
+                try:
+                    absolute_index = int(episode['v'])
+                except:
+                    absolute_index = None
+                expires_on = episode['g']
+                aired = Datetime.ParseDate(episode['f'])
+                summary = summary + '\n\nExpires: ' + expires_on       
             
-            try:
-                absolute_index = int(episode['v'])
-            except:
-                absolute_index = None
-            expires_on = episode['g']
-            aired = Datetime.ParseDate(episode['f'])
-            summary = summary + '\n\nExpires: ' + expires_on
-            
-        
-    return EpisodeObject(
-        title=title,
-        summary=summary,
-        thumb=thumb,
-        duration=duration,
-        show = show,
-        season = season,
-        absolute_index = absolute_index,
-        originally_available_at = aired
-    )
-
-
+                return EpisodeObject(
+                    title=title,
+                    summary=summary,
+                    thumb=thumb,
+                    duration=duration,
+                    show = show,
+                    season = season,
+                    absolute_index = absolute_index,
+                    originally_available_at = aired
+                )
+    
 def MediaObjectsForURL(url):
     
     container = Container.MP4
@@ -83,21 +85,23 @@ def PlayVideo(url):
     
     #API returns series even if querying with episode ID
     data = JSON.ObjectFromURL(API_URL + 'series=' + str(ID))
-    episodes = data[0]['f']
-    for episode in episodes:
-        if episode['a'] == ID:
-            live = 0
-            if 'n' in episode:
-                video_url = episode['n'][:-4]
-            else:
-                video_url = episode['r']
-                live = 1
+    
+    for results in data:
+        episodes = results['f']
+        for episode in episodes:
+            if episode['a'] == ID:
+                live = 0
+                if 'n' in episode:
+                    video_url = episode['n'][:-4]
+                else:
+                    video_url = episode['r']
+                    live = 1
+                
+                SWF_URL = 'http://www.abc.net.au/iview/images/iview.jpg'
+                CLIP = 'mp4:flash/playback/_definst_/'
+                if live == 1:
+                    rtmpVid = RTMPVideoURL(url=rtmpURL, clip=video_url, swf_url=SWF_URL, live=True)
+                else:
+                    rtmpVid = RTMPVideoURL(url=rtmpURL, clip=CLIP + video_url, swf_url=SWF_URL)
             
-    SWF_URL = 'http://www.abc.net.au/iview/images/iview.jpg'
-    CLIP = 'mp4:flash/playback/_definst_/'
-    if live == 1:
-        rtmpVid = RTMPVideoURL(url=rtmpURL, clip=video_url, swf_url=SWF_URL, live=True)
-    else:
-        rtmpVid = RTMPVideoURL(url=rtmpURL, clip=CLIP + video_url, swf_url=SWF_URL)
-
-    return IndirectResponse(VideoClipObject, key=rtmpVid)
+                return IndirectResponse(VideoClipObject, key=rtmpVid)

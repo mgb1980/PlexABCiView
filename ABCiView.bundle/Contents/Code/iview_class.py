@@ -61,13 +61,18 @@ class iView_Series(object):
         self.id = key
         Log('Getting iView series info for:' + iView_Config.API_URL + 'series=' + key)
 	json = JSON.ObjectFromURL(iView_Config.API_URL + 'series=' + key)
-
-        self.title = json[0]['b']
-        self.description = json[0]['c']
-        self.category = json[0]['e']
-        self.img = json[0]['d']
-        self.episode_count = len(json[0]['f'])
-        self.episodes = self.Episodes(json[0]['f'])
+	for result in json:
+	    Log('Checking series ID ' + str(key) + ' against results ' + str(result['a']) )
+	    if str(result['a']) == str(key):
+		Log('Got match for series ID')
+		self.title = result['b']
+		self.description = result['c']
+		self.category = result['e']
+		self.img = result['d']
+		self.episode_count = len(result['f'])
+		self.episodes = self.Episodes(result['f'])
+	    else:
+		Log('rejected series ID match')
 
     def Episodes(self, json):
         eps = []
