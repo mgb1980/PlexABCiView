@@ -1,16 +1,16 @@
 class iView_Config():
     BASE_URL = 'http://iview.abc.net.au/'
-    API_URL = BASE_URL + 'api'
+    API_URL = BASE_URL + 'api/'
 
     # CFG_URL = BASE_URL + 'xml/config.xml'
     # CFG_XML = XML.ElementFromURL(CFG_URL)
     #
     # AUTH_URL = CFG_XML.xpath('/config/param[@name="auth"]')[0].get("value")
 
-    CHANNEL_URL = API_URL + '/channels'
+    CHANNEL_URL = API_URL + 'channels'
     CHANNEL_JSON = JSON.ObjectFromURL(CHANNEL_URL)
 
-    CATEGORY_URL = API_URL + '/category'
+    CATEGORY_URL = API_URL + 'category'
     CATEGORY_JSON = JSON.ObjectFromURL(CATEGORY_URL)
 
     # RTMP_Server = CFG_XML.xpath('/config/param[@name="server_streaming"]')[0].get("value") + '?auth='
@@ -20,7 +20,10 @@ class iView_Config():
     # SERIES_URL = API_URL + 'seriesIndex'
     # SERIES_JSON = {}  # JSON.ObjectFromURL(SERIES_URL)
     channel_list = []
-    for c in CATEGORY_JSON['channels']:
+    Log(CHANNEL_JSON)
+    for key in CHANNEL_JSON['channels']:
+        Log(key)
+        c = CHANNEL_JSON['channels'][key]
         Log(c)
         channel = {'id': c['categoryID'],
                    'title': c['title'],
@@ -29,7 +32,9 @@ class iView_Config():
         channel_list.append(channel)
 
     category_list = []
-    for c in CATEGORY_JSON['categories']:
+    for key in CATEGORY_JSON['categories']:
+        Log(key)
+        c = CATEGORY_JSON['categories'][key]
         Log(c)
         category = {'id': c['categoryID'],
                    'title': c['title'],
@@ -139,7 +144,37 @@ class iView_Category(object):
                 series.append(tmp)
 
         return series
-	
-	
-	
-	
+
+
+class iview_plugin():
+    BASE_URL = 'http://iview.abc.net.au/'
+    API_URL = BASE_URL + 'api/'
+
+    CHANNEL_URL = API_URL + 'channels'
+    CHANNEL_JSON = JSON.ObjectFromURL(CHANNEL_URL)
+
+    CATEGORY_URL = API_URL + 'category'
+    CATEGORY_JSON = JSON.ObjectFromURL(CATEGORY_URL)
+
+    channel_list = []
+    Log(CHANNEL_JSON)
+    for key in CHANNEL_JSON['channels']:
+        Log(key)
+        c = CHANNEL_JSON['channels'][key]
+        Log(c)
+        channel = {'id': c['categoryID'],
+                   'title': c['title'],
+                   'href': c['href'],
+                   'num_series': len(c['episodes'])}
+        channel_list.append(channel)
+
+    category_list = []
+    for key in CATEGORY_JSON['categories']:
+        Log(key)
+        c = CATEGORY_JSON['categories'][key]
+        Log(c)
+        category = {'id': c['categoryID'],
+                   'title': c['title'],
+                   'href': c['href'],
+                   'num_series': len(c['episodes'])}
+        category_list.append(category)
