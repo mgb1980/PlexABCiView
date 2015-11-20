@@ -51,19 +51,16 @@ def MainMenu():
 @route('/video/aubciview/list_menu/{item_list}')
 def list_menu(title, item_list):
     oc = ObjectContainer(view_group='List', title2=title)
-
     if item_list == u'category':
         item_list = iview_plugin.category_list
-    elif list == u'channel':
+    elif item_list == u'channel':
         item_list = iview_plugin.channel_list
     else:
         item_list = []
 
     for item in item_list:
-        Log(u'********** {0} '.format(item))
         channel = JSON.ObjectFromURL(iview_plugin.API_URL + item['href'])
         thumb = channel['featuredImage'] if 'featuredImage' in channel else None
-        Log(u'********** {0} '.format(thumb))
         oc.add(DirectoryObject(
             key=Callback(get_series_by_channel, channel=item['id'], title=item['title'], href=item['href']),
             title=item['title'],
@@ -158,106 +155,14 @@ def create_video_clip(url, title=u'', summary=u'', duration=None, thumb=None, co
         summary=summary,
         duration=duration,
         thumb=thumb,
-        items=[
-            MediaObject(
-                #container = Container.MP4,     # MP4, MKV, MOV, AVI
-                #video_codec = VideoCodec.H264, # H264
-                #audio_codec = AudioCodec.AAC,  # ACC, MP3
-                #audio_channels = 2,            # 2, 6
-                parts=[
-                    PartObject(
-
-                        key=HTTPLiveStreamURL(url=url)
-                    )
-                ],
+        items=[MediaObject(
+                parts=[PartObject(key=HTTPLiveStreamURL(url=url))],
                 optimized_for_streaming = True
-            )
-        ]
+                )
+            ]
     )
 
     if container:
-        return ObjectContainer(objects=[vco])
-    else:
-        return vco
-
-@route('/video/aubciview/category/{category}')
-def GetSeriesByCaegory(category):
-    cat = iView_Category(category)
-
-    oc = ObjectContainer(view_group='List', title2=cat.title)
-
-    series = cat.series_list
-
-    for item in series:
-        oc.add(DirectoryObject(
-            key=Callback(GetEpisodesBySeries, series=item[0]),
-            title=item[1]
-        ))
-    oc.objects.sort(key=lambda obj: obj.title)
-
-    return oc
-
-
-@route('/video/aubciview/series/{series}')
-def GetEpisodesBySeries(series):
-    show = iView_Series(series)
-    oc = ObjectContainer(view_group='InfoList', title2=show.title, no_cache=True)
-
-    episodes = show.episodes
-
-    rtmp_url = iView_Config.RTMP_URL()
-
-    for item in episodes:
-        dur = item[5] * 1000
-        oc.add(Play_iView(item[1], item[2], item[3], item[4], dur, rtmp_url, item[6]))
-
-    oc.objects.sort(key=lambda obj: obj.title)
-
-    return oc
-
-
-@route('/video/aubciview/episode/play')
-def Play_iView(iView_Title, iView_Summary, iView_Path, iView_Thumb, iView_Duration, video_url, iView_live=0,
-               include_container=False):
-    HTTP.ClearCache()
-
-    iView_live = int(iView_live)
-
-    call_args = {
-        "iView_Title": iView_Title,
-        "iView_Summary": iView_Summary,
-        "iView_Path": iView_Path,
-        "iView_Thumb": iView_Thumb,
-        "iView_Duration": int(iView_Duration),
-        "video_url": video_url,
-        "iView_live": iView_live,
-        "include_container": True,
-    }
-
-    if iView_live == 1:
-        rtmpVid = RTMPVideoURL(url=video_url, clip=iView_Path, swf_url=iView_Config.SWF_URL, live=True)
-    else:
-        rtmpVid = RTMPVideoURL(url=video_url, clip=iView_Config.CLIP_PATH() + iView_Path, swf_url=iView_Config.SWF_URL)
-
-    vco = VideoClipObject(
-        key=Callback(Play_iView, **call_args),
-        rating_key=iView_Path,
-        title=iView_Title,
-        summary=iView_Summary,
-        thumb=iView_Thumb,
-        duration=int(iView_Duration),
-        items=[
-            MediaObject(
-                parts=[
-                    PartObject(
-                        key=rtmpVid
-                    )
-                ]
-            )
-        ]
-    )
-
-    if include_container:
         return ObjectContainer(objects=[vco])
     else:
         return vco
