@@ -3,7 +3,6 @@ from iview_class import *
 ART = 'art-default.jpg'
 ICON = 'icon-default.jpg'
 
-
 def Start():
     Plugin.AddViewGroup('List', viewMode='List', mediaType='items')
     Plugin.AddViewGroup('InfoList', viewMode='InfoList', mediaType='items')
@@ -13,17 +12,55 @@ def Start():
 def MainMenu():
     oc = ObjectContainer(view_group='List', title2='ABC iView')
 
+    oc.add(DirectoryObject(
+        key=Callback(ChannelMenu),
+        title=u'Channels'
+    ))
+
+    # oc.add(DirectoryObject(
+    #     key=Callback(CategoryMenu),
+    #     title=u'Categories'
+    # ))
+    #
+    # oc.add(DirectoryObject(
+    #     key=Callback(LatestMenu),
+    #     title=u'Latest'
+    # ))
+    #
+    # oc.add(DirectoryObject(
+    #     key=Callback(PopularMenu),
+    #     title=u'Popular'
+    # ))
+
 
     #oc.add(VideoClipObject(key = RTMPVideoURL(url = 'rtmp://203.18.195.10/ondemand' + '?auth=7B8F0402DD370FF9299E', clip = 'mp4:comedy/madashell_02_08', swf_url = 'http://www.abc.net.au/iview/images/iview.jpg'), rating_key = '123',title = 'TEST'))
 
-    cats = iView_Config.List_Categories()
+    # cats = iView_Config.List_Categories()
+    #
+    # for key in cats:
+    #     oc.add(DirectoryObject(
+    #         key=Callback(GetSeriesByCaegory, category=key),
+    #         title=cats[key]
+    #     ))
 
-    for key in cats:
+    oc.objects.sort(key=lambda obj: obj.title)
+
+    return oc
+
+
+@route('/video/aubciview/channel')
+def ChannelMenu():
+    cat = iView_Category(category)
+
+    oc = ObjectContainer(view_group='List', title2=cat.title)
+
+    series = cat.series_list
+
+    for item in series:
         oc.add(DirectoryObject(
-            key=Callback(GetSeriesByCaegory, category=key),
-            title=cats[key]
+            key=Callback(GetEpisodesBySeries, series=item[0]),
+            title=item[1]
         ))
-
     oc.objects.sort(key=lambda obj: obj.title)
 
     return oc

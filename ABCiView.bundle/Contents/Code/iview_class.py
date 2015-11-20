@@ -1,21 +1,41 @@
 class iView_Config():
-    BASE_URL = 'http://www.abc.net.au/iview/'
+    BASE_URL = 'http://iview.abc.net.au/'
+    API_URL = BASE_URL + 'api'
 
-    CFG_URL = BASE_URL + 'xml/config.xml'
-    CFG_XML = XML.ElementFromURL(CFG_URL)
+    # CFG_URL = BASE_URL + 'xml/config.xml'
+    # CFG_XML = XML.ElementFromURL(CFG_URL)
+    #
+    # AUTH_URL = CFG_XML.xpath('/config/param[@name="auth"]')[0].get("value")
 
-    AUTH_URL = CFG_XML.xpath('/config/param[@name="auth"]')[0].get("value")
-    API_URL = CFG_XML.xpath('/config/param[@name="api"]')[0].get("value")
+    CHANNEL_URL = API_URL + '/channels'
+    CHANNEL_JSON = JSON.ObjectFromURL(CHANNEL_URL)
 
-    CAT_URL = BASE_URL + CFG_XML.xpath('/config/param[@name="categories"]')[0].get("value")
+    CATEGORY_URL = API_URL + '/category'
+    CATEGORY_JSON = JSON.ObjectFromURL(CATEGORY_URL)
 
-    RTMP_Server = CFG_XML.xpath('/config/param[@name="server_streaming"]')[0].get("value") + '?auth='
-    SWF_URL = 'http://www.abc.net.au/iview/images/iview.jpg'
+    # RTMP_Server = CFG_XML.xpath('/config/param[@name="server_streaming"]')[0].get("value") + '?auth='
+    # SWF_URL = 'http://www.abc.net.au/iview/images/iview.jpg'
+    #
+    # CAT_XML = XML.ElementFromURL(CAT_URL)
+    # SERIES_URL = API_URL + 'seriesIndex'
+    # SERIES_JSON = {}  # JSON.ObjectFromURL(SERIES_URL)
+    channel_list = []
+    for c in CATEGORY_JSON['channels']:
+        Log(c)
+        channel = {'id': c['categoryID'],
+                   'title': c['title'],
+                   'href': c['href'],
+                   'num_series': len(c['episodes'])}
+        channel_list.append(channel)
 
-    CAT_XML = XML.ElementFromURL(CAT_URL)
-    SERIES_URL = API_URL + 'seriesIndex'
-    SERIES_JSON = JSON.ObjectFromURL(SERIES_URL)
-    category_list = {}
+    category_list = []
+    for c in CATEGORY_JSON['categories']:
+        Log(c)
+        category = {'id': c['categoryID'],
+                   'title': c['title'],
+                   'href': c['href'],
+                   'num_series': len(c['episodes'])}
+        category_list.append(category)
 
     @classmethod
     def RTMP_URL(self):
