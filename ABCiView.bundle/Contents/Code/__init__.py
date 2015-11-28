@@ -84,13 +84,15 @@ def get_series_by_channel(channel, title, href):
         oc.add(DirectoryObject(
             key=Callback(get_episodes, href=href, cat=u'carousels', title=item['title']),
             title=item['title']))
-
-    for item in json['collections']:
-        Log(item)
-        oc.add(DirectoryObject(
-            key=Callback(get_episodes, href=href, cat=u'collections', title=item['title']),
-            title=item['title']))
-
+    try:
+        for item in json['collections']:
+            Log(item)
+            oc.add(DirectoryObject(
+                key=Callback(get_episodes, href=href, cat=u'collections', title=item['title']),
+                title=item['title']))
+    except:
+        pass
+    
     for item in json['index']:
         Log(item)
         oc.add(DirectoryObject(
