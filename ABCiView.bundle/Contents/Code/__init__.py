@@ -59,7 +59,7 @@ def list_menu(title, item_list):
         item_list = []
 
     for item in item_list:
-        channel = JSON.ObjectFromURL(iview_plugin.API_URL + item['href'])
+        channel = JSON.ObjectFromURL(iview_plugin.BASE_URL + item['href'])
         thumb = channel['featuredImage'] if 'featuredImage' in channel else None
         oc.add(DirectoryObject(
             key=Callback(get_series_by_channel, channel=item['id'], title=item['title'], href=item['href']),
@@ -76,7 +76,7 @@ def get_series_by_channel(channel, title, href):
     Log(u'get_series_by_channel:: channel={0}, title={1}, href={2}'.format(channel, title, href))
     oc = ObjectContainer(view_group='List', title2=title)
 
-    href = iview_plugin.API_URL + href
+    href = iview_plugin.BASE_URL + href
     json = JSON.ObjectFromURL( href)
 
     for item in json['carousels']:
