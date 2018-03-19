@@ -1,11 +1,13 @@
 class iview_plugin():
-    BASE_URL = 'http://iview.abc.net.au/'
+    #BASE_URL = 'http://iview.abc.net.au/' 20180319
+    BASE_URL = 'http://cdn.iview.abc.net.au'
     API_URL = BASE_URL + 'api/'
 
     CHANNEL_URL = API_URL + 'channels'
     channel_json = JSON.ObjectFromURL(CHANNEL_URL)
 
-    CATEGORY_URL = API_URL + 'category'
+    #CATEGORY_URL = API_URL + 'category' 20180319
+    CATEGORY_URL = API_URL + 'categories'
     category_json = JSON.ObjectFromURL(CATEGORY_URL)
     i = 0
     j = 0
